@@ -63,7 +63,7 @@ Agent-first SaaS starter: **AstroWind** (Astro 7 + Tailwind v4) on **Cloudflare 
 
 | Command                                      | Does                                                                                                                                |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                                | Dev server :4321 with local D1/Queue (run `npm run db:migrate` once)                                                                |
+| `npm run dev`                                | Dev server :4321 with local D1/Queue (auto-creates `.dev.vars` + local DB)                                                          |
 | `npm run status`                             | Setup state + next steps (`-- --json` for machines)                                                                                 |
 | `npm run setup`                              | Idempotent: name project, write `.dev.vars`, create D1/queue, Stripe prices + webhook, deploy, GitHub secrets (`-- --only=<steps>`) |
 | `npm run new -- <kind> <name>`               | Scaffold page / api / admin / migration / job                                                                                       |

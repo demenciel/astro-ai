@@ -8,8 +8,9 @@
     "node": ">=22.22.3"
   },
   "scripts": {
+    "predev": "node scripts/dev-prep.mjs",
     "dev": "astro dev",
-    "start": "astro dev",
+    "start": "npm run dev",
     "build": "astro build",
     "preview": "npm run build && wrangler dev",
     "deploy": "npm run build && wrangler d1 migrations apply DB --remote && wrangler deploy",
