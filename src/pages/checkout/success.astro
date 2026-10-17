@@ -1,0 +1,13 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import HeroText from '~/components/widgets/HeroText.astro';
+---
+
+<Layout metadata={{ title: 'Payment successful', robots: { index: false, follow: true } }}>
+  <HeroText
+    tagline="Payment successful"
+    title="You're all set"
+    subtitle="Thanks for your purchase. A receipt is on its way to your inbox."
+    callToAction={{ text: 'Back to home', href: '/' }}
+  />
+</Layout>

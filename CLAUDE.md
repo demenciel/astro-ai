@@ -1,3 +1,6 @@
-# Claude Code Configuration
+# Claude Code
 
-See [AGENTS.md](./AGENTS.md) for all project documentation and AI agent instructions.
+All instructions live in AGENTS.md (shared by every agent). The product brief is PROJECT.md.
+
+@AGENTS.md
+@PROJECT.md

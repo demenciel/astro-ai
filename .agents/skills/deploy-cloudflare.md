@@ -1,44 +1,31 @@
-# Deploy to Cloudflare (Workers / Pages)
+# Deploy to Cloudflare
 
-The template is fully static (`output: 'static'`), so it can be uploaded to Cloudflare as plain assets or built with the official adapter.
+Architecture: one Worker (`src/worker.ts`) serves prerendered pages from `dist/client`
+(static assets, free, no Worker invocation) and runs on-demand routes (`prerender = false`:
+`/admin/*`, `/api/*`). Bindings: `DB` (D1), `JOBS` (Queue), `ASSETS`. All on the Workers Free plan.
 
-## Option A — static assets (simplest)
+## First deploy (automated)
 
-The repo ships `wrangler.jsonc` with `assets.directory: "./dist"` and `not_found_handling: "404-page"`, so:
+1. `.env.setup` has `CLOUDFLARE_API_TOKEN` (see `setup-keys.md`).
+2. `npm run setup` → creates D1 + queue, writes ids into `wrangler.jsonc`, runs remote
+   migrations, uploads secrets (`wrangler deploy --secrets-file`), deploys, sets GitHub secrets.
+3. Commit the updated `wrangler.jsonc` (ids are not secret) and push. From now on
+   `.github/workflows/deploy.yaml` deploys every push to `main`.
 
-1. Use the "Deploy to Cloudflare" button in the README, or run `npm run build && npx wrangler deploy` (the first run asks you to log in).
-2. Alternatively upload `dist/` by hand (Cloudflare Pages "direct upload"). No adapter needed either way.
+## Manual / repeat
 
-## Option B — `@astrojs/cloudflare` adapter
+| Task                 | Command                                                                                                                                                                                |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Deploy from laptop   | `npm run deploy` (build + remote migrations + `wrangler deploy`)                                                                                                                       |
+| Change/add a secret  | `npx wrangler secret put NAME` (or add to `.env.setup`, `npm run setup -- --only=deploy`)                                                                                              |
+| Tail production logs | `npx wrangler tail`                                                                                                                                                                    |
+| Query production DB  | `npx wrangler d1 execute DB --remote --command "SELECT ..."`                                                                                                                           |
+| Custom domain        | Dashboard → Workers → your worker → Domains & Routes; then set `SITE_URL` in `.env.setup` and re-run `npm run setup -- --only=cloudflare,stripe,deploy` (moves the Stripe webhook too) |
+| Cron                 | add `"triggers": { "crons": ["0 * * * *"] }` to `wrangler.jsonc`; code in `scheduled()` in `src/worker.ts`                                                                             |
 
-Needed only if you add server-rendered routes. Requires Astro ≥ 7.3 (the template ships 7.3.1).
+## Gotchas
 
-1. `npx astro add cloudflare` (adds the dependency and `adapter: cloudflare()` to `astro.config.ts`).
-2. Keep `output: 'static'`; pages stay prerendered and the adapter emits `dist/client` + `dist/server`.
-3. Create `wrangler.toml` following https://developers.cloudflare.com/workers/frameworks/framework-guides/astro/ and run `npx wrangler deploy`.
-
-## Images
-
-| `imageService`      | Behaviour                                                                       | Use when                        |
-| ------------------- | ------------------------------------------------------------------------------- | ------------------------------- |
-| `compile` (default) | Sharp optimises images at build time for prerendered pages                      | This template (recommended)     |
-| `cloudflare`        | `<img srcset>` points at `/cdn-cgi/image/...`, resized by Cloudflare at runtime | On-demand pages, Images enabled |
-| `passthrough`       | No optimisation                                                                 | Debugging                       |
-
-Do **not** route SVGs through `imageService: 'cloudflare'`: Cloudflare Image Resizing does not transform SVG and the request loops with `ERROR 9421 The origin server redirected too many times`. Serve SVG logos from `public/` with a plain `<img>`, or keep `compile`.
-
-Remote images from Unsplash/Cloudinary/etc. are rewritten by `unpic` in `src/components/common/Image.astro` and never touch Cloudflare's resizer.
-
-## Verify locally
-
-```bash
-npm run build
-npx wrangler dev   # with the adapter, or `npx astro preview` for the static build
-```
-
-Check a page with a local image (`/`), a blog post (`/get-started-website-with-astro-tailwind-css`) and `/rss.xml`.
-
-## Notes
-
-- Historical error `Cannot read properties of undefined (reading 'startsWith')` at `injectImageEndpoint` came from mixing Astro 5 with a pre-Astro-5 adapter (`image.endpoint` changed from a string to `{ route, entrypoint }`). Keep `astro` and `@astrojs/cloudflare` at compatible versions.
-- `public/_headers` already sets long cache headers for `/_astro/*`; Cloudflare Pages honours it.
+- After editing `wrangler.jsonc` bindings run `npm run types` (regenerates `worker-configuration.d.ts`).
+- Images: `imageService: 'compile'` (Sharp at build). Don't use Cloudflare Image Resizing for SVGs.
+- Only `prerender = false` routes cost Worker requests (Free: 100k/day). Keep marketing pages static.
+- `wrangler dev`/`astro dev` use local D1/Queue simulators in `.wrangler/` — no account needed.

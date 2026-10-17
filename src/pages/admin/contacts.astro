@@ -1,0 +1,21 @@
+---
+import AdminLayout from '~/layouts/AdminLayout.astro';
+import DataTable from '~/components/admin/DataTable.astro';
+import { all, type ContactRow } from '~/lib/db';
+
+export const prerender = false;
+
+const rows = await all<ContactRow>('SELECT * FROM contacts ORDER BY id DESC LIMIT 200');
+---
+
+<AdminLayout title="Contacts">
+  <DataTable
+    rows={rows}
+    columns={[
+      { key: 'created_at', label: 'Date' },
+      { key: 'name', label: 'Name' },
+      { key: 'email', label: 'Email' },
+      { key: 'message', label: 'Message' },
+    ]}
+  />
+</AdminLayout>

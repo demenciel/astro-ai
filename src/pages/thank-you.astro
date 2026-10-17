@@ -1,0 +1,13 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import HeroText from '~/components/widgets/HeroText.astro';
+---
+
+<Layout metadata={{ title: 'Thank you', robots: { index: false, follow: true } }}>
+  <HeroText
+    tagline="Message sent"
+    title="Thanks for reaching out"
+    subtitle="We received your message and will get back to you soon."
+    callToAction={{ text: 'Back to home', href: '/' }}
+  />
+</Layout>

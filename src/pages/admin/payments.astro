@@ -1,0 +1,41 @@
+---
+import AdminLayout from '~/layouts/AdminLayout.astro';
+import DataTable from '~/components/admin/DataTable.astro';
+import { all, type CustomerRow, type PaymentRow } from '~/lib/db';
+import { formatMoney } from '~/lib/stripe';
+
+export const prerender = false;
+
+const [payments, customers] = await Promise.all([
+  all<PaymentRow>('SELECT * FROM payments ORDER BY id DESC LIMIT 200'),
+  all<CustomerRow>('SELECT * FROM customers ORDER BY id DESC LIMIT 200'),
+]);
+---
+
+<AdminLayout title="Payments">
+  <h2 class="font-semibold mb-2">Checkout sessions</h2>
+  <DataTable
+    rows={payments}
+    empty="No payments yet. Payments appear here when the Stripe webhook fires."
+    columns={[
+      { key: 'created_at', label: 'Date' },
+      { key: 'email', label: 'Email' },
+      { key: 'lookup_key', label: 'Plan' },
+      {
+        key: 'amount_total',
+        label: 'Amount',
+        format: (v: unknown, r: Record<string, unknown>) => formatMoney(v as number, r.currency as string),
+      },
+      { key: 'status', label: 'Status' },
+    ]}
+  />
+  <h2 class="font-semibold mt-8 mb-2">Customers</h2>
+  <DataTable
+    rows={customers}
+    columns={[
+      { key: 'created_at', label: 'Since' },
+      { key: 'email', label: 'Email' },
+      { key: 'stripe_customer_id', label: 'Stripe customer' },
+    ]}
+  />
+</AdminLayout>

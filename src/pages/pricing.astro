@@ -7,6 +7,26 @@ import FAQs from '~/components/widgets/FAQs.astro';
 import Steps from '~/components/widgets/Steps.astro';
 import Features3 from '~/components/widgets/Features3.astro';
 import CallToAction from '~/components/widgets/CallToAction.astro';
+import { checkoutHref, plans } from '~/lib/stripe';
+import type { Price } from '~/types';
+
+// Plans come from src/data/plans.json (also used by `npm run setup` to create Stripe prices).
+const amount = (cents?: number) => (cents == null ? undefined : cents / 100);
+const prices: Price[] = plans.plans.map((plan) => {
+  const monthly = plan.prices.find((p) => p.interval === 'month');
+  const yearly = plan.prices.find((p) => p.interval === 'year');
+  const once = plan.prices.find((p) => p.interval === null);
+  return {
+    title: plan.name,
+    subtitle: plan.description,
+    price:
+      monthly && yearly ? { monthly: amount(monthly.amount)!, yearly: amount(yearly.amount)! } : amount(once?.amount),
+    period: monthly && yearly ? { monthly: 'per month', yearly: 'per year' } : 'one-time',
+    items: plan.features.map((description) => ({ description })),
+    highlight: Boolean((plan as { highlight?: boolean }).highlight),
+    callToAction: { text: 'Get started', href: checkoutHref(plan.id) },
+  };
+});
 
 const metadata = {
   title: 'Pricing',
@@ -26,91 +46,7 @@ const metadata = {
 
   <!-- Pricing Widget ******************* -->
 
-  <Prices
-    title="Our prices"
-    subtitle="Only pay for what you need"
-    prices={[
-      {
-        title: 'basic',
-        subtitle: 'Optimal choice for personal use',
-        price: { monthly: 29, yearly: 290 },
-        period: { monthly: 'per month', yearly: 'per year' },
-        items: [
-          {
-            description: 'Etiam in libero, et volutpat',
-          },
-          {
-            description: 'Aenean ac nunc dolor tristique',
-          },
-          {
-            description: 'Cras scelerisque accumsan lib',
-          },
-          {
-            description: 'In hac habitasse',
-          },
-        ],
-        callToAction: {
-          text: 'Get started',
-          href: '#',
-        },
-      },
-      {
-        title: 'standard',
-        subtitle: 'Optimal choice for small teams',
-        price: { monthly: 69, yearly: 690 },
-        period: { monthly: 'per month', yearly: 'per year' },
-        note: 'Two months free on the yearly plan',
-        highlight: true,
-        items: [
-          {
-            description: 'Proin vel laoreet',
-          },
-          {
-            description: 'Ut efficitur habitasse egestas',
-          },
-          {
-            description: 'Volutpat hac curabitur',
-          },
-          {
-            description: 'Pellentesque blandit ut nibh',
-          },
-          {
-            description: 'Donec fringilla sem',
-          },
-        ],
-        callToAction: {
-          text: 'Get started',
-          href: '#',
-        },
-        hasRibbon: true,
-        ribbonTitle: 'popular',
-      },
-      {
-        title: 'premium',
-        subtitle: 'Optimal choice for companies',
-        price: { monthly: 199, yearly: 1990 },
-        period: { monthly: 'per month', yearly: 'per year' },
-        items: [
-          {
-            description: 'Curabitur suscipit risus',
-          },
-          {
-            description: 'Aliquam habitasse malesuada',
-          },
-          {
-            description: 'Suspendisse sit amet blandit',
-          },
-          {
-            description: 'Suspendisse auctor blandit dui',
-          },
-        ],
-        callToAction: {
-          text: 'Get started',
-          href: '#',
-        },
-      },
-    ]}
-  />
+  <Prices title="Our prices" subtitle="Only pay for what you need" prices={prices} />
 
   <!-- Comparison Widget ************ -->
 

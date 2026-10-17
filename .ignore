@@ -1,0 +1,4 @@
+# Keeps ripgrep-based agent searches lean (does not affect git).
+package-lock.json
+worker-configuration.d.ts
+.github/assets/

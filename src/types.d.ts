@@ -191,6 +191,9 @@ export interface Form {
   disclaimer?: Disclaimer;
   button?: string;
   description?: string;
+  /** Where the form submits. Defaults to the built-in D1-backed endpoint `/api/contact`. */
+  action?: string;
+  method?: 'post' | 'get';
 }
 
 // WIDGETS

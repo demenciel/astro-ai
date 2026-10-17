@@ -1,0 +1,24 @@
+---
+import AdminLayout from '~/layouts/AdminLayout.astro';
+import DataTable from '~/components/admin/DataTable.astro';
+import { all, type JobRow } from '~/lib/db';
+
+export const prerender = false;
+
+const rows = await all<JobRow>(
+  'SELECT id, type, status, error, created_at, updated_at FROM jobs ORDER BY id DESC LIMIT 200'
+);
+---
+
+<AdminLayout title="Jobs">
+  <DataTable
+    rows={rows}
+    columns={[
+      { key: 'id', label: '#' },
+      { key: 'type', label: 'Type' },
+      { key: 'status', label: 'Status' },
+      { key: 'error', label: 'Error' },
+      { key: 'updated_at', label: 'Updated' },
+    ]}
+  />
+</AdminLayout>

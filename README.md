@@ -1,317 +1,81 @@
-# 🚀 AstroWind
+# astro-ai
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/lighthouse-dark.svg">
-  <img src=".github/assets/lighthouse-light.svg" align="right" alt="Lighthouse scores: Performance 100, Accessibility 100, Best Practices 100, SEO 100" width="100" height="358">
-</picture>
+**An agent-first SaaS starter.** Open it in Claude Code, Codex, Cursor or Gemini CLI, and the agent
+interviews you about your product, asks for a few keys, then provisions, customizes and deploys
+the whole thing on Cloudflare's free tier.
 
-🌟 _Most *starred* & *forked* Astro theme in 2022, 2023, 2024 & 2025_. 🌟
+Built on [AstroWind](https://github.com/arthelokyo/astrowind) (Astro 7 + Tailwind CSS v4).
 
-**AstroWind** is a free and open-source template to make your website using **[Astro v7](https://astro.build/) + [Tailwind CSS v4](https://tailwindcss.com/)**. Ready to start a new project and designed taking into account web best practices.
+## What's inside
 
-- ✅ **Production-ready** scores in **PageSpeed Insights** reports.
-- ✅ **30+ page-section widgets** (heroes, features, bento, tabs, pricing with comparison table, FAQ accordion, testimonials, team, timeline, gallery, projects, countdown, newsletter…) typed and composable.
-- ✅ Integration with **Tailwind CSS v4** supporting **Dark mode** and **_RTL_**.
-- ✅ **Fast and SEO friendly blog** with automatic **RSS feed**, **MDX** support, **Categories & Tags**, **Social Share**, ...
-- ✅ **Image Optimization** (using new **Astro Assets** and **Unpic** for Universal image CDN).
-- ✅ Generation of **project sitemap** based on your routes.
-- ✅ **Open Graph tags** for social media sharing.
-- ✅ **Analytics** built-in Google Analytics integration.
-- ✅ **shadcn/ui-compatible design tokens** (`bg-background`, `text-foreground`, `border-border`…) derived from the theme variables.
-- ✅ **AI-ready**: `AGENTS.md` and step-by-step skills in `.agents/skills/` for Claude Code, Codex, Cursor and similar tools.
+|                     |                                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Site**            | AstroWind's 40+ widgets, blog, SEO, dark mode. Marketing pages are prerendered static assets                       |
+| **Runtime**         | One Cloudflare Worker (`@astrojs/cloudflare`): static pages + on-demand `/api/*` and `/admin/*`                    |
+| **Database**        | Cloudflare D1 + SQL migrations (contacts, customers, payments, jobs)                                               |
+| **Background jobs** | Cloudflare Queues consumer, with a job log in the admin panel                                                      |
+| **Payments**        | Stripe Checkout + verified, idempotent webhook. Plans in `src/data/plans.json`, created in Stripe automatically    |
+| **AI**              | One `chat()` function for OpenAI, Anthropic, Gemini, xAI Grok and DeepSeek (plain `fetch`, no SDKs)                |
+| **Admin panel**     | `/admin`: dashboard, contacts, payments, jobs, AI playground, integration status                                   |
+| **CI/CD**           | GitHub Actions: check + build on PRs, deploy to Cloudflare on push to `main`                                       |
+| **Agent layer**     | `AGENTS.md` task router, per-area `AGENTS.md`, 24 task skills, onboarding interview, `npm run status`, scaffolders |
 
-<br>
+Every integration except Cloudflare is optional. Without its key, a feature switches itself off and everything else keeps working.
 
-![AstroWind Theme Screenshot](https://raw.githubusercontent.com/arthelokyo/.github/main/resources/astrowind/screenshot-astrowind-readme-def-v1.png)
+## Quick start
 
-[![arthelokyo](https://custom-icon-badges.demolab.com/badge/made%20by%20-arthelokyo-556bf2?style=flat-square&logo=arthelokyo&logoColor=white&labelColor=101827)](https://arthelokyo.com)
-[![License](https://img.shields.io/github/license/arthelokyo/astrowind?style=flat-square&color=dddddd&labelColor=000000)](https://github.com/arthelokyo/astrowind/blob/main/LICENSE.md)
-[![Maintained](https://img.shields.io/badge/maintained%3F-yes-brightgreen.svg?style=flat-square)](https://github.com/arthelokyo)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat-square)](https://github.com/arthelokyo/astrowind#contributing)
-[![Known Vulnerabilities](https://snyk.io/test/github/arthelokyo/astrowind/badge.svg?style=flat-square)](https://snyk.io/test/github/arthelokyo/astrowind)
-[![Stars](https://img.shields.io/github/stars/arthelokyo/astrowind.svg?style=social&label=stars&maxAge=86400&color=ff69b4)](https://github.com/arthelokyo/astrowind)
-[![Forks](https://img.shields.io/github/forks/arthelokyo/astrowind.svg?style=social&label=forks&maxAge=86400&color=ff69b4)](https://github.com/arthelokyo/astrowind)
-
-<br>
-
-<details open>
-<summary>Table of Contents</summary>
-
-- [Demo](#demo)
-- [TL;DR](#tldr)
-- [Getting started](#getting-started)
-  - [Project structure](#project-structure)
-  - [Commands](#commands)
-  - [Configuration](#configuration)
-  - [Deploy](#deploy)
-- [FAQ](#faq)
-- [Contributing](#contributing)
-- [Acknowledgements](#acknowledgements)
-- [License](#license)
-
-</details>
-
-<br>
-
-## Demo
-
-📌 [https://astrowind.vercel.app/](https://astrowind.vercel.app/)
-
-<br>
-
-## TL;DR
-
-```shell
-npm create astro@latest -- --template arthelokyo/astrowind
+```bash
+npm create astro@latest -- --template demenciel/astro-ai my-app
+# or: "Use this template" on GitHub, then clone
+cd my-app && npm install
 ```
 
-## Getting started
+Then open the folder in your coding agent and say **"set up this project"** (Claude Code: `/onboard`).
+The agent will:
 
-**AstroWind** tries to give you quick access to creating a website using [Astro v7](https://astro.build/) + [Tailwind CSS v4](https://tailwindcss.com/). It's a free theme which focuses on simplicity, good practices and high performance.
+1. Ask you ~8 questions in one message (what you're building, brand, pages, pricing, AI features).
+2. Tell you which keys to paste into `.env.setup` while it works:
+   - **Cloudflare API token** (required): [create one](https://dash.cloudflare.com/profile/api-tokens) from the _Edit Cloudflare Workers_ template, then add _D1: Edit_ and _Queues: Edit_
+   - GitHub token (optional, enables deploy-on-push)
+   - Stripe test keys (optional)
+   - OpenAI / Anthropic / Gemini / xAI / DeepSeek keys (optional)
+3. Rewrite the copy, colors, navigation, homepage and pricing to match your answers.
+4. Run `npm run setup`, which creates D1 and the queue, Stripe products and webhook, uploads secrets, deploys, and wires GitHub Actions.
 
-Very little vanilla javascript is used only to provide basic functionality so that each developer decides which framework (React, Vue, Svelte, Solid JS...) to use and how to approach their goals.
+### Without an agent
 
-> **Note:** Requires **Node.js >= 22.22.3** (see `.nvmrc`). The template currently uses `output: 'static'`, but the blog only works with `prerender = true`.
-
-### Project structure
-
-Inside **AstroWind** template, you'll see the following folders and files:
-
-```
-/
-├── .agents/
-│   └── skills/
-├── AGENTS.md
-├── public/
-│   ├── _headers
-│   └── robots.txt
-├── src/
-│   ├── assets/
-│   │   ├── favicons/
-│   │   ├── images/
-│   │   └── styles/
-│   │       ├── shadcn.css
-│   │       └── tailwind.css
-│   ├── components/
-│   │   ├── blog/
-│   │   ├── common/
-│   │   ├── ui/
-│   │   ├── widgets/
-│   │   │   ├── Header.astro
-│   │   │   └── ...
-│   │   ├── CustomStyles.astro
-│   │   ├── Favicons.astro
-│   │   └── Logo.astro
-│   ├── content.config.ts
-│   ├── data/
-│   │   └── post/
-│   │       ├── post-slug-1.md
-│   │       ├── post-slug-2.mdx
-│   │       └── ...
-│   ├── layouts/
-│   │   ├── Layout.astro
-│   │   ├── MarkdownLayout.astro
-│   │   └── PageLayout.astro
-│   ├── pages/
-│   │   ├── [...blog]/
-│   │   │   ├── [category]/
-│   │   │   ├── [tag]/
-│   │   │   ├── [...page].astro
-│   │   │   └── index.astro
-│   │   ├── index.astro
-│   │   ├── 404.astro
-│   │   ├-- rss.xml.ts
-│   │   └── ...
-│   ├── utils/
-│   ├── config.yaml
-│   └── navigation.ts
-├── package.json
-├── astro.config.ts
-└── ...
+```bash
+cp .env.setup.example .env.setup     # fill in your keys
+PROJECT_NAME="My App" npm run setup  # idempotent, safe to re-run
+npm run dev                          # http://localhost:4321, admin at /admin
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Commands
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+| Command                                                  |                                                                                |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `npm run dev`                                            | Dev server with local D1 + Queue simulation                                    |
+| `npm run status`                                         | Setup state and next steps                                                     |
+| `npm run setup`                                          | Provision + deploy (`-- --only=project,local,cloudflare,stripe,deploy,github`) |
+| `npm run new -- page\|api\|admin\|migration\|job <name>` | Scaffold                                                                       |
+| `npm run check` / `npm run fix`                          | Types + lint + format                                                          |
+| `npm run deploy`                                         | Build, apply remote migrations, deploy                                         |
+| `npm run db:migrate` / `npm run db:query -- "<sql>"`     | Local database                                                                 |
 
-Any static assets, like images, can be placed in the `public/` directory if they do not require any transformation or in the `assets/` directory if they are imported directly.
+## Why "agent-first"
 
-[![Edit AstroWind on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://githubbox.com/arthelokyo/astrowind/tree/main) [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/arthelokyo/astrowind)
+Templates usually optimize for humans reading docs. This one is also built for agents that pay per token:
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file `README.md`. Update `src/config.yaml` and contents. Have fun!
+- **Progressive disclosure.** The root `AGENTS.md` (~90 lines) routes each task to one skill file, and that file names the exact files to edit. Agents don't need to explore.
+- **Scaffolders instead of boilerplate.** `npm run new` writes the plumbing, so the agent only writes intent.
+- **Machine-readable state.** `npm run status [--json]` replaces poking around the filesystem. A SessionStart hook in Claude Code runs it automatically.
+- **Secrets stay out of chat.** Keys go in `.env.setup`. Agents see which keys are set, never their values, and Claude Code is denied reading the file.
+- **Idempotent automation.** The agent can re-run `npm run setup` safely after every new key.
 
-<br>
+## Free-tier footprint
 
-### Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command             | Action                                             |
-| :------------------ | :------------------------------------------------- |
-| `npm install`       | Installs dependencies                              |
-| `npm run dev`       | Starts local dev server at `localhost:4321`        |
-| `npm run build`     | Build your production site to `./dist/`            |
-| `npm run preview`   | Preview your build locally, before deploying       |
-| `npm run check`     | Check your project for errors                      |
-| `npm run fix`       | Run Eslint and format codes with Prettier          |
-| `npm run astro ...` | Run CLI commands like `astro add`, `astro preview` |
-
-<br>
-
-### Configuration
-
-Basic configuration file: `./src/config.yaml`
-
-```yaml
-site:
-  name: 'Example'
-  site: 'https://example.com'
-  base: '/' # Change this if you need to deploy to Github Pages, for example
-  trailingSlash: false # Generate permalinks with or without "/" at the end
-
-  googleSiteVerificationId: false # Or some value,
-
-# Default SEO metadata
-metadata:
-  title:
-    default: 'Example'
-    template: '%s — Example'
-  description: 'This is the default meta description of Example website'
-  robots:
-    index: true
-    follow: true
-  openGraph:
-    site_name: 'Example'
-    images:
-      - url: '~/assets/images/default.png'
-        width: 1200
-        height: 628
-    type: website
-  twitter:
-    handle: '@twitter_user'
-    site: '@twitter_user'
-    cardType: summary_large_image
-
-i18n:
-  language: en
-  textDirection: ltr
-
-apps:
-  blog:
-    isEnabled: true # If the blog will be enabled
-    postsPerPage: 6 # Number of posts per page
-
-    post:
-      isEnabled: true
-      permalink: '/blog/%slug%' # Variables: %slug%, %year%, %month%, %day%, %hour%, %minute%, %second%, %category%
-      robots:
-        index: true
-
-    list:
-      isEnabled: true
-      pathname: 'blog' # Blog main path, you can change this to "articles" (/articles)
-      robots:
-        index: true
-
-    category:
-      isEnabled: true
-      pathname: 'category' # Category main path /category/some-category, you can change this to "group" (/group/some-category)
-      robots:
-        index: true
-
-    tag:
-      isEnabled: true
-      pathname: 'tag' # Tag main path /tag/some-tag, you can change this to "topics" (/topics/some-category)
-      robots:
-        index: false
-
-    isRelatedPostsEnabled: true # If a widget with related posts is to be displayed below each post
-    relatedPostsCount: 4 # Number of related posts to display
-
-analytics:
-  vendors:
-    googleAnalytics:
-      id: null # or "G-XXXXXXXXXX"
-
-ui:
-  theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
-```
-
-<br>
-
-#### Customize Design
-
-With Tailwind CSS v4, all configuration is CSS-first. To customize Font families, Colors or more Elements refer to the following files:
-
-- `src/components/CustomStyles.astro` — CSS variables for colors and fonts
-- `src/assets/styles/tailwind.css` — Tailwind theme tokens (`@theme`), custom utilities (`@utility`), and plugins
-- `src/assets/styles/shadcn.css` — shadcn/ui-compatible variables (`--background`, `--border`, `--ring`…) derived from the theme, so shadcn-style components pick up your colors
-
-### Deploy
-
-#### Deploy to production (manual)
-
-You can create an optimized production build with:
-
-```shell
-npm run build
-```
-
-Now, your website is ready to be deployed. All generated files are located at
-`dist` folder, which you can deploy the folder to any hosting service you
-prefer.
-
-#### Deploy to Netlify
-
-Clone this repository on your own GitHub account and deploy it to Netlify:
-
-[![Netlify Deploy button](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/arthelokyo/astrowind)
-
-#### Deploy to Vercel
-
-Clone this repository on your own GitHub account and deploy to Vercel:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Farthelokyo%2Fastrowind)
-
-#### Deploy to Cloudflare
-
-Clone this repository on your own GitHub account and deploy it to Cloudflare Workers (static assets, no adapter needed; the `wrangler.jsonc` in the repo points Cloudflare at `dist/`):
-
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/arthelokyo/astrowind)
-
-<br>
-
-## FAQ
-
-**Is AstroWind v1 still maintained?**
-Yes, in maintenance mode: v1 receives dependency updates and bug fixes, while new development goes to AstroWind v2 (October 2026).
-
-**How do I disable the blog, change the Open Graph image, deploy under a sub-path, connect a CMS, deploy to Cloudflare…?**
-Ask your AI coding assistant. AstroWind is _AI-ready_: the repository ships an [`AGENTS.md`](./AGENTS.md) with the project conventions and step-by-step skills in [`.agents/skills/`](./.agents/skills/) for the most common tasks, so Claude Code, Codex/ChatGPT, Cursor, Copilot and similar tools can do them reliably (and you can read the skills yourself).
-
-**Which widgets are there and how do I use them?**
-Every section is a component in `src/components/widgets/` with typed props. The catalogue with props and where each one is demoed is in [`.agents/skills/use-widgets.md`](./.agents/skills/use-widgets.md); the six pages in `src/pages/landing/` show them combined into complete landing pages.
-
-**Where do blog posts go?**
-`src/data/post/` as `.md` or `.mdx` files. They are read at build time.
-
-**Where do I change colors and fonts?**
-Colors in `src/components/CustomStyles.astro` (CSS variables for light and dark), Tailwind tokens and utilities in `src/assets/styles/tailwind.css`, fonts in the `fonts` entry of `astro.config.ts`.
-
-**Which Node.js version do I need?**
-Node.js 22.22.3 or newer (`.nvmrc`).
-
-<br>
-
-## Contributing
-
-If you have any ideas, suggestions or find any bugs, feel free to open a discussion, an issue or create a pull request.
-That would be very useful for all of us and we would be happy to listen and take action.
-
-## Acknowledgements
-
-Initially created by [**Arthelokyo**](https://arthelokyo.com) and maintained by a community of [contributors](https://github.com/arthelokyo/astrowind/graphs/contributors).
+Workers Free covers 100k requests/day; static pages don't count against it. D1 Free gives 5 GB and 5M reads/day. If Queues are unavailable on your plan, remove the `queues` block from `wrangler.jsonc` and jobs run inline. Stripe has no monthly fee.
 
 ## License
 
-**AstroWind** is licensed under the MIT license — see the [LICENSE](./LICENSE.md) file for details.
+MIT. Based on [AstroWind](https://github.com/arthelokyo/astrowind) by onWidget / Arthelokyo (MIT).

@@ -1,13 +1,33 @@
-// Cloudflare Workers configuration for the "Deploy to Cloudflare" button in the
-// README. The site is fully static, so the
-// Worker only serves the `dist/` folder as assets; no adapter is needed.
-// Docs: https://developers.cloudflare.com/workers/static-assets/
+// Cloudflare Worker config. `npm run setup` fills in `name` and `database_id`.
+// Everything here fits the Workers Free plan (Workers, static assets, D1, Queues).
+// Secrets are NOT stored here: local -> .dev.vars, production -> `npm run setup`.
+// Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "astrowind",
+  "name": "astro-ai",
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
+    "binding": "ASSETS",
     "directory": "./dist",
     "not_found_handling": "404-page",
+  },
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "astro-ai-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "astro-ai-jobs" }],
+    "consumers": [{ "queue": "astro-ai-jobs", "max_batch_size": 10, "max_retries": 3 }],
+  },
+  "vars": {
+    // Public base URL, used for Stripe redirects. Set by `npm run setup`.
+    "SITE_URL": "http://localhost:4321",
   },
 }

@@ -60,12 +60,12 @@ Images accept `{ src, alt }` where `src` is a local import (`~/assets/images/...
 
 ### Conversion
 
-| Widget         | Use it for                           | Key props                                                                                                                        | Demo                                   |
-| -------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `CallToAction` | Closing call to action               | `actions`, `layout` (`card` \| `banner`)                                                                                         | every page                             |
-| `Contact`      | Full form in a card                  | `inputs`, `textarea`, `disclaimer`, `button`, `description`. The form has no backend by default; see `configure-contact-form.md` | `/contact`, `/landing/lead-generation` |
-| `Newsletter`   | One-field signup band                | `placeholder`, `button`, `disclaimer`, `action`, `method`, `layout` (`band` \| `card`). No backend by default                    | `/landing/subscription`, blog list     |
-| `StickyCTA`    | Bottom bar on phones after scrolling | `text`, `href`, `label`, `showAfter` (px), `mobileOnly`                                                                          | `/landing/click-through`               |
+| Widget         | Use it for                           | Key props                                                                                                      | Demo                                   |
+| -------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `CallToAction` | Closing call to action               | `actions`, `layout` (`card` \| `banner`)                                                                       | every page                             |
+| `Contact`      | Full form in a card                  | `inputs`, `textarea`, `disclaimer`, `button`, `description`, `action`. Posts to `/api/contact` (D1) by default | `/contact`, `/landing/lead-generation` |
+| `Newsletter`   | One-field signup band                | `placeholder`, `button`, `disclaimer`, `action`, `method`, `layout` (`band` \| `card`). No backend by default  | `/landing/subscription`, blog list     |
+| `StickyCTA`    | Bottom bar on phones after scrolling | `text`, `href`, `label`, `showAfter` (px), `mobileOnly`                                                        | `/landing/click-through`               |
 
 ### Blog
 

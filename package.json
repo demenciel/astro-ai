@@ -1,7 +1,7 @@
 {
-  "name": "@arthelokyo/astrowind",
-  "version": "1.0.0-beta.66",
-  "description": "AstroWind: A free template using Astro 7 and Tailwind CSS v4. Astro starter theme.",
+  "name": "astro-ai",
+  "version": "0.1.0",
+  "description": "Agent-first SaaS starter: AstroWind + Cloudflare Workers, D1, Queues, Stripe, admin panel and multi-provider AI.",
   "type": "module",
   "private": true,
   "engines": {
@@ -11,7 +11,15 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler d1 migrations apply DB --remote && wrangler deploy",
+    "setup": "node scripts/setup.mjs",
+    "status": "node scripts/status.mjs",
+    "new": "node scripts/new.mjs",
+    "types": "wrangler types --env-file .dev.vars.example --strict-vars=false",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "db:query": "wrangler d1 execute DB --local --command",
     "astro": "astro",
     "check": "npm run check:astro && npm run check:eslint && npm run check:prettier",
     "check:astro": "astro check",
@@ -25,6 +33,7 @@
     "@astro-community/astro-embed-twitter": "^0.5.11",
     "@astro-community/astro-embed-vimeo": "^0.3.12",
     "@astro-community/astro-embed-youtube": "^0.5.10",
+    "@astrojs/cloudflare": "^14.4.0",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.3.1",
@@ -32,6 +41,7 @@
     "astro-seo": "^1.2.0",
     "limax": "4.2.3",
     "lodash.merge": "^4.6.2",
+    "stripe": "^23.0.0",
     "unpic": "^4.2.2"
   },
   "devDependencies": {
@@ -55,6 +65,7 @@
     "eslint-plugin-astro": "^3.1.0",
     "globals": "^17.9.0",
     "js-yaml": "^4.3.2",
+    "libsodium-wrappers": "^0.8.4",
     "mdast-util-to-string": "^4.0.0",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
@@ -63,7 +74,8 @@
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.66.0"
+    "typescript-eslint": "^8.66.0",
+    "wrangler": "^4.151.1"
   },
   "overrides": {
     "yaml": ">=2.8.3",

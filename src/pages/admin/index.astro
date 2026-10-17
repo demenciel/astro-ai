@@ -1,0 +1,30 @@
+---
+import AdminLayout from '~/layouts/AdminLayout.astro';
+import StatCard from '~/components/admin/StatCard.astro';
+import { first } from '~/lib/db';
+import { formatMoney } from '~/lib/stripe';
+
+export const prerender = false;
+
+const count = async (table: string) => (await first<{ n: number }>(`SELECT COUNT(*) AS n FROM ${table}`))?.n ?? 0;
+
+const [contacts, customers, payments, failedJobs, revenue] = await Promise.all([
+  count('contacts'),
+  count('customers'),
+  count('payments'),
+  first<{ n: number }>("SELECT COUNT(*) AS n FROM jobs WHERE status = 'failed'").then((r) => r?.n ?? 0),
+  first<{ total: number | null }>("SELECT SUM(amount_total) AS total FROM payments WHERE status = 'paid'").then(
+    (r) => r?.total ?? 0
+  ),
+]);
+---
+
+<AdminLayout title="Dashboard">
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+    <StatCard label="Contacts" value={contacts} href="/admin/contacts" />
+    <StatCard label="Customers" value={customers} href="/admin/payments" />
+    <StatCard label="Payments" value={payments} href="/admin/payments" />
+    <StatCard label="Revenue" value={formatMoney(revenue)} href="/admin/payments" />
+    <StatCard label="Failed jobs" value={failedJobs} href="/admin/jobs" />
+  </div>
+</AdminLayout>

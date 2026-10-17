@@ -1,0 +1,14 @@
+---
+export interface Props {
+  label: string;
+  value: string | number;
+  href?: string;
+}
+const { label, value, href } = Astro.props;
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag href={href} class="block rounded-lg border border-gray-200 dark:border-slate-800 p-4 hover:shadow-sm">
+  <div class="text-sm text-muted">{label}</div>
+  <div class="text-2xl font-bold mt-1">{value}</div>
+</Tag>

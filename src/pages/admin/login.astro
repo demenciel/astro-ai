@@ -1,0 +1,41 @@
+---
+import Layout from '~/layouts/Layout.astro';
+import { env } from '~/lib/env';
+
+export const prerender = false;
+
+const hasError = Astro.url.searchParams.has('error');
+const next = Astro.url.searchParams.get('next') ?? '/admin';
+const configured = Boolean(env.ADMIN_PASSWORD);
+---
+
+<Layout metadata={{ title: 'Admin login', robots: { index: false, follow: false } }}>
+  <main class="min-h-screen flex items-center justify-center p-4">
+    <form
+      method="post"
+      action="/api/admin/login"
+      class="w-full max-w-sm space-y-4 rounded-lg border border-gray-200 dark:border-slate-800 p-6"
+    >
+      <h1 class="text-xl font-bold">Admin</h1>
+      {
+        !configured && (
+          <p class="text-sm text-red-600">
+            ADMIN_PASSWORD is not set. Run <code>npm run setup</code> (or add it to <code>.dev.vars</code>).
+          </p>
+        )
+      }
+      {hasError && <p class="text-sm text-red-600">Wrong password.</p>}
+      <input type="hidden" name="next" value={next} />
+      <label class="block text-sm font-medium" for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        required
+        autocomplete="current-password"
+        class="py-2 px-3 block w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900"
+      />
+      <button type="submit" class="btn-primary w-full">Sign in</button>
+    </form>
+  </main>
+</Layout>

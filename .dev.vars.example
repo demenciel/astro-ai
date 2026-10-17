@@ -1,0 +1,16 @@
+# Local secrets for `npm run dev`. `npm run setup` creates .dev.vars for you.
+# Copy to .dev.vars and fill in. Never commit .dev.vars.
+ADMIN_PASSWORD=change-me
+SESSION_SECRET=change-me-to-a-long-random-string
+
+# Optional: Stripe (test mode keys: https://dashboard.stripe.com/test/apikeys)
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# Optional: AI providers (any subset)
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+GEMINI_API_KEY=
+XAI_API_KEY=
+DEEPSEEK_API_KEY=

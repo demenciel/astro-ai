@@ -178,6 +178,10 @@ const periodFor = (period: Price['period'], billing: 'monthly' | 'yearly') =>
         button.addEventListener('click', () => {
           const billing = button.dataset.billing ?? 'monthly';
           this.dataset.billing = billing;
+          // Keep Stripe checkout links (/api/stripe/checkout?plan=…&interval=…) in sync with the toggle.
+          this.querySelectorAll<HTMLAnchorElement>('a[href*="interval="]').forEach((a) => {
+            a.href = a.href.replace(/interval=(month|year)/, `interval=${billing === 'yearly' ? 'year' : 'month'}`);
+          });
           this.querySelectorAll<HTMLButtonElement>('.aw-billing-btn').forEach((b) => {
             const active = b === button;
             b.toggleAttribute('data-active', active);

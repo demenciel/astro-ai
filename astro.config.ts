@@ -13,6 +13,8 @@ import icon from 'astro-icon';
 import compress from 'astro-compress';
 import type { AstroIntegration } from 'astro';
 
+import cloudflare from '@astrojs/cloudflare';
+
 import astrowind from './vendor/integration';
 
 import { readingTimeRemarkPlugin, responsiveTablesRehypePlugin } from './src/utils/frontmatter';
@@ -24,7 +26,12 @@ const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroInteg
   hasExternalScripts ? (Array.isArray(items) ? items.map((item) => item()) : [items()]) : [];
 
 export default defineConfig({
+  // Marketing pages are prerendered (static, free to serve). Routes that export
+  // `prerender = false` (admin, API) run on the Worker. See AGENTS.md.
   output: 'static',
+  adapter: cloudflare({ imageService: 'compile' }),
+  // Admin auth uses a signed cookie (src/lib/auth.ts), so no KV namespace is needed.
+  session: false,
 
   // Prefetch links as they enter the viewport for snappier navigations
   // (works together with <ClientRouter />, which enables prefetch by default).
@@ -49,7 +56,10 @@ export default defineConfig({
   ],
 
   integrations: [
-    sitemap(),
+    sitemap({
+      // Keep private / transactional routes out of the sitemap.
+      filter: (page) => !/^\/(admin|api|checkout|thank-you)(\/|$)/.test(new URL(page).pathname),
+    }),
     mdx(),
     icon({
       // Local SVG icons (used as <Icon name="file-name" />) live next to the other assets.

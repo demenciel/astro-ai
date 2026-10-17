@@ -1,0 +1,34 @@
+{
+  "$comment": "Single source of truth for paid plans. `npm run setup` creates matching Stripe products/prices (by lookup_key). Prices are in the smallest currency unit (cents). interval: month | year | null (one-time).",
+  "currency": "usd",
+  "plans": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "description": "For individuals getting started",
+      "features": ["Core features", "Email support"],
+      "prices": [
+        { "lookup_key": "starter_monthly", "amount": 900, "interval": "month" },
+        { "lookup_key": "starter_yearly", "amount": 9000, "interval": "year" }
+      ]
+    },
+    {
+      "id": "pro",
+      "name": "Pro",
+      "description": "For growing teams",
+      "highlight": true,
+      "features": ["Everything in Starter", "Priority support", "Advanced features"],
+      "prices": [
+        { "lookup_key": "pro_monthly", "amount": 2900, "interval": "month" },
+        { "lookup_key": "pro_yearly", "amount": 29000, "interval": "year" }
+      ]
+    },
+    {
+      "id": "lifetime",
+      "name": "Lifetime",
+      "description": "Pay once, keep forever",
+      "features": ["Everything in Pro", "All future updates"],
+      "prices": [{ "lookup_key": "lifetime", "amount": 19900, "interval": null }]
+    }
+  ]
+}

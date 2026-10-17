@@ -1,123 +1,88 @@
-# AstroWind Agent Instructions
+# Agent guide (read this first, then only what the task needs)
 
-## Project Overview
+Agent-first SaaS starter: **AstroWind** (Astro 7 + Tailwind v4) on **Cloudflare Workers**
+(static pages + on-demand routes) with **D1**, **Queues**, **Stripe**, an **admin panel** and
+**multi-provider AI** (OpenAI, Anthropic, Gemini, xAI, DeepSeek). Fits the Workers Free plan.
 
-AstroWind is a free, open-source website template built with **Astro v7** and **Tailwind CSS v4**. It generates a fully static site optimized for performance, SEO, and accessibility.
+## Start of every session
 
-**Stack:** Astro v7 | Tailwind CSS v4 | TypeScript 5.9 | MDX | Sharp
+1. Run `npm run status` (≈10 lines: onboarding state, keys set (names only), next steps).
+2. If not onboarded → follow `.agents/skills/onboarding.md` before anything else.
+3. Read `PROJECT.md` (the product brief + decisions). It overrides demo content.
 
-## Skills
+## Token budget rules
 
-Before implementing a project-specific task (disabling the blog, Open Graph images, base paths, CMS, deployments, header customisation…), check `.agents/skills/` for an existing skill and follow it.
+- Route through the table below; open one skill file, not the codebase. Each skill names the exact files to touch.
+- Don't read: `package-lock.json`, `worker-configuration.d.ts` (generated), `dist/`, `.wrangler/`, `vendor/`, demo pages under `src/pages/homes|landing/`, widget sources (use the catalog in `use-widgets.md`).
+- Scaffold, don't hand-write: `npm run new -- page|api|admin|migration|job <name>`.
+- Prefer `npm run check` output over re-reading files to verify edits.
+- Ask the user batched questions (one message), never one at a time.
+- Secrets: the user pastes them into `.env.setup`; you check names via `npm run status`. Never echo values.
 
-## Quick Reference
+## Task router
 
-| Command           | Purpose                             |
-| ----------------- | ----------------------------------- |
-| `npm run dev`     | Start dev server at localhost:4321  |
-| `npm run build`   | Production build to `./dist/`       |
-| `npm run preview` | Preview production build locally    |
-| `npm run check`   | Run astro check + ESLint + Prettier |
-| `npm run fix`     | Auto-fix ESLint + Prettier issues   |
+| Task                                                           | Read                                                                    |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| First run / customize for a new product                        | `.agents/skills/onboarding.md`                                          |
+| What keys to ask for and where to get them                     | `.agents/skills/setup-keys.md`                                          |
+| Provision Cloudflare, deploy, CI, domains, cron                | `.agents/skills/deploy-cloudflare.md`                                   |
+| Build a page / landing / section                               | `.agents/skills/use-widgets.md`, `write-landing-page.md`, `add-page.md` |
+| Colors, fonts, theme                                           | `.agents/skills/styling.md`, `use-shadcn-tokens.md`                     |
+| Header / footer nav                                            | `.agents/skills/customize-header.md`                                    |
+| Blog posts / remove blog                                       | `.agents/skills/add-blog-post.md`, `disable-blog.md`                    |
+| SEO: OG images, structured data                                | `.agents/skills/set-open-graph-image.md`, `add-structured-data.md`      |
+| Payments, plans, webhooks                                      | `.agents/skills/setup-stripe.md`                                        |
+| AI features                                                    | `.agents/skills/add-ai-feature.md`                                      |
+| Database tables                                                | `.agents/skills/add-db-table.md`                                        |
+| Background jobs / queues                                       | `.agents/skills/add-background-job.md`                                  |
+| Admin pages, auth                                              | `.agents/skills/add-admin-section.md`                                   |
+| Contact form                                                   | `.agents/skills/configure-contact-form.md`                              |
+| Theme plumbing (Tailwind config, fonts, images, config loader) | `.agents/skills/astrowind-internals.md`                                 |
+| Other (CMS, base path, components)                             | `ls .agents/skills/`                                                    |
 
-**Node.js requirement:** >= 22.22.3
+## Map
 
-## Architecture
+| Path                      | What                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| `src/pages/`              | Routes. Static by default; `export const prerender = false` = runs on the Worker                   |
+| `src/pages/api/`          | JSON/form endpoints: `contact`, `health`, `stripe/{checkout,webhook}`, `admin/*`                   |
+| `src/pages/admin/`        | Admin panel (guarded by `src/middleware.ts`)                                                       |
+| `src/lib/`                | Server code: `env` (bindings/secrets), `db` (D1), `jobs` (Queues), `stripe`, `ai/`, `auth`, `http` |
+| `src/worker.ts`           | Worker entry: `fetch` (Astro) + `queue` consumer + `scheduled` cron                                |
+| `src/components/widgets/` | Page sections (catalog: `use-widgets.md`)                                                          |
+| `src/config.yaml`         | Site name, URL, SEO defaults, blog/i18n settings                                                   |
+| `src/navigation.ts`       | Header and footer links                                                                            |
+| `src/data/plans.json`     | Paid plans (pricing page + Stripe setup)                                                           |
+| `src/data/post/`          | Blog posts (md/mdx)                                                                                |
+| `migrations/`             | D1 SQL migrations (numbered, append-only)                                                          |
+| `scripts/`                | `setup.mjs`, `status.mjs`, `new.mjs` (zero-dep Node)                                               |
+| `wrangler.jsonc`          | Worker name, bindings (DB, JOBS, ASSETS), vars                                                     |
+| `.github/workflows/`      | `ci.yaml` (check + build), `deploy.yaml` (push to main → Cloudflare)                               |
 
-### Directory Structure
+## Commands
 
-```
-src/
-  assets/styles/tailwind.css   # Tailwind v4 config (themes, utilities, plugins)
-  components/
-    common/        # Shared: Image, Metadata, Analytics, ToggleTheme
-    ui/            # Primitives: Button, Form, Headline, Timeline, WidgetWrapper
-    widgets/       # Page sections: Hero, Features, Bento, Pricing, Comparison, FAQs, Team, Gallery…
-    blog/          # Blog: SinglePost, List, Pagination, Tags
-    CustomStyles.astro  # CSS variables for colors and fonts
-  content.config.ts    # Content Collections schema (Astro 5+ location)
-  data/post/           # Blog posts (.md, .mdx)
-  layouts/             # Layout.astro, PageLayout.astro, MarkdownLayout.astro
-  pages/               # File-based routing
-  utils/               # blog.ts, images.ts, permalinks.ts, frontmatter.ts
-  config.yaml          # Site configuration (loaded as virtual module)
-  navigation.ts        # Navigation structure
-  types.d.ts           # TypeScript type definitions
-vendor/integration/    # Custom Astro integration for config loading
-```
+| Command                                      | Does                                                                                                                                |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                | Dev server :4321 with local D1/Queue (run `npm run db:migrate` once)                                                                |
+| `npm run status`                             | Setup state + next steps (`-- --json` for machines)                                                                                 |
+| `npm run setup`                              | Idempotent: name project, write `.dev.vars`, create D1/queue, Stripe prices + webhook, deploy, GitHub secrets (`-- --only=<steps>`) |
+| `npm run new -- <kind> <name>`               | Scaffold page / api / admin / migration / job                                                                                       |
+| `npm run check` / `npm run fix`              | astro check + ESLint + Prettier / autofix                                                                                           |
+| `npm run build` / `npm run deploy`           | Build / build + remote migrations + deploy                                                                                          |
+| `npm run types`                              | Regenerate binding types after editing `wrangler.jsonc` or `.dev.vars.example`                                                      |
+| `npm run db:migrate` / `db:query -- "<sql>"` | Local D1 migrate / query                                                                                                            |
 
-### Path Aliases
+## Invariants
 
-Use `~/` to import from `src/`:
+- Optional integrations degrade gracefully: check the key (`getStripe()`, `enabledProviders()`, `features()`) before use.
+- Server-only code lives in `src/lib/` and routes with `prerender = false`; never import `~/lib/*` from client `<script>`s.
+- Access bindings/secrets via `import { env } from '~/lib/env'`.
+- New secret name → add to `.dev.vars.example`, `.env.setup.example`, `WORKER_SECRETS` in `scripts/lib.mjs`, then `npm run types`.
+- D1: prepared statements only (`?` placeholders). Schema changes only via new migration files.
+- Imports use `~/` (= `src/`). Site config comes from `astrowind:config`.
+- Keep marketing pages static (free, fast). Use on-demand routes only for dynamic data.
+- Record product decisions in `PROJECT.md` → Decisions log.
 
-```typescript
-import Image from '~/components/common/Image.astro';
-import { SITE } from 'astrowind:config';
-```
+## Done checklist
 
-### Configuration System
-
-Site config lives in `src/config.yaml` and is loaded as a Vite virtual module `astrowind:config` by the custom integration in `vendor/integration/`. Exports: `SITE`, `I18N`, `METADATA`, `APP_BLOG`, `UI`, `ANALYTICS`.
-
-## Tailwind CSS v4
-
-Configuration is CSS-first in `src/assets/styles/tailwind.css`:
-
-- **Theme tokens:** `@theme { --color-primary: var(--aw-color-primary); ... }`
-- **Custom utilities:** `@utility bg-page { ... }`
-- **Dark mode:** Class-based via `@variant dark (&:where(.dark, .dark *))`
-- **Plugins:** `@plugin "@tailwindcss/typography"`
-- **Custom variant:** `@custom-variant intersect (&:not([no-intersect]))`
-
-CSS variables for colors/fonts are defined in `src/components/CustomStyles.astro` with light/dark theme variants.
-
-The Vite plugin `@tailwindcss/vite` is configured in `astro.config.ts` (not as an Astro integration).
-
-### Class Merging
-
-Components use `twMerge` from `tailwind-merge` v3 for conditional class composition.
-
-## Content Collections
-
-Defined in `src/content.config.ts` using Astro's Content Layer API with `glob()` loader. Posts are in `src/data/post/` as `.md` or `.mdx` files.
-
-Post frontmatter: `title` (required), `publishDate`, `updateDate`, `draft`, `excerpt`, `image`, `category`, `tags`, `author`, `metadata`.
-
-## Component Patterns
-
-- Props extend interfaces from `~/types`
-- Use `class:list` for conditional classes
-- Use `twMerge()` when accepting className overrides
-- Use named slots for layout composition
-- Widget components accept standardized props (see `~/types`)
-
-## Image Handling
-
-`src/components/common/Image.astro` supports:
-
-- Local images via `astro:assets` (optimized by Sharp)
-- Remote images via Unpic CDN
-- Allowed domains (for providers Unpic can't detect, processed by Sharp): `cdn.pixabay.com`
-
-Hero images use `loading="eager"` and `fetchpriority="high"`.
-
-## Fonts
-
-Fonts are handled by Astro's native **Fonts API**, configured in `astro.config.ts` under the `fonts` key (provider, family, `cssVariable`) and injected via the `<Font />` component in `src/layouts/Layout.astro`. Astro self-hosts, subsets, preloads, and generates metric-adjusted fallbacks. To change the typeface, edit the `fonts` entry and point `--aw-font-*` in `CustomStyles.astro` at the new `cssVariable`.
-
-## Third-party Scripts (Partytown)
-
-`@astrojs/partytown` is wired as an **opt-in** in `astro.config.ts`, gated behind `const hasExternalScripts = false`. Set it to `true` to offload third-party scripts (e.g. Google Analytics via `analytics.vendors.googleAnalytics.partytown`) to a web worker. It is disabled by default so the base template ships no external scripts.
-
-## Content Security Policy
-
-Astro's native CSP is intentionally **not** enabled in this version: it is incompatible with `<ClientRouter />` view transitions (shipped on by default) and would break the arbitrary third-party scripts a template user typically adds. CSP is deferred to AstroWind v2, where the component model (and optional SSR) make it clean and opt-in.
-
-## Verification Checklist
-
-After changes, always verify:
-
-1. `npm run build` succeeds
-2. `npm run check` passes (astro check + ESLint + Prettier)
-3. Visual check in browser: homepage, blog, dark mode, mobile menu
-4. Structured data describes the site it is on: the `WebSite` / `Organization` block in `src/pages/index.astro` is built only from `config.yaml`; anything you add there must be true for your site
+1. `npm run check` passes. 2. `npm run build` passes. 3. If routes/data changed: `npm run dev` and hit the route (`curl`). 4. `PROJECT.md` updated if a decision was made.
